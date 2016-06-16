@@ -116,7 +116,7 @@
    The parameters of a method are used to generate usage documentation,
    following the common convention of =<required>= and =[optional]=.
 
-   If a method raises an ~ArugmentError~, a usage notice will be displayed,
+   If a method raises an ~ArgumentError~, a usage notice will be displayed,
    outlining the correct usage.
 
 ** Command Demultiplexing (aka "that thing =busybox= does")
