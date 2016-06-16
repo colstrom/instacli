@@ -1,0 +1,135 @@
+#+TITLE: Instant CLI
+#+LATEX: \pagebreak
+
+* Overview (just add objects!)
+
+  An unopinionated universal commandline interface for Ruby. Given a collection
+  of Objects, provides a reasonable CLI with automatic help generation.
+
+* Rationale (why you care)
+
+  Ruby has a number of excellent gems for building commandline applications.
+  They range in complexity, but share a common approach: defining an interface
+  to some objects.
+
+  But... your objects already have interfaces: their =public methods=.
+
+  ~instacli~ adopts this perspective when building a CLI.
+
+* Installation (I can haz?)
+
+  #+BEGIN_SRC shell
+    gem install instacli
+  #+END_SRC
+
+* Usage (How to use it)
+
+** Building a CLI for an Object
+
+   Imagine we have an =EchoClass= that implements an =echo(string)= method that
+   returns ~string~. Something like this:
+
+  #+BEGIN_SRC ruby
+    class EchoClass
+      def echo(string)
+        string
+      end
+    end
+  #+END_SRC
+
+  We can add a CLI for it like so:
+
+  #+BEGIN_SRC ruby
+    require 'instacli'
+
+    boring_object = EchoClass.new
+
+    cli = InstaCLI.new boring: boring_object
+
+    cli.execute(*ARGV)
+  #+END_SRC
+
+  Assuming this code is in ~cli.rb~, and ~cli.rb~ is executable, we can use this
+  CLI as follows:
+
+  #+BEGIN_SRC shell
+    ./cli.rb boring echo foo
+  #+END_SRC
+
+  And it will output =foo= to =STDOUT=.
+
+** Autogenerating Documentation
+
+   Using the same ~EchoClass~, we can add help like so:
+
+   #+BEGIN_SRC ruby
+     class CLI < InstaCLI::CLI
+       include InstaCLI::Help
+     end
+
+     cli = CLI.new boring: boring_object
+
+     cli.execute(*ARGV)
+   #+END_SRC
+
+   Now running ~cli.rb~ with ~--help~, like so:
+
+   #+BEGIN_SRC shell
+     ./cli.rb --help boring echo
+   #+END_SRC
+
+   Will print the following:
+
+   #+BEGIN_EXAMPLE
+     NAME:
+       cli boring echo - CommandLine Interface
+
+     USAGE:
+       cli boring echo <string>
+   #+END_EXAMPLE
+
+* How does it work?
+
+** Mapping Commands to Objects
+
+   A single ~InstaCLI~ can expose as many objects as you like. Just give it a
+   hash, mapping the command names you want to use, to the objects they expose.
+
+   #+BEGIN_SRC ruby
+     mapping = {
+       foo: SomeObject.new,
+       bar: AnotherObject.new
+     }
+
+     InstaCLI::CLI.new mapping
+   #+END_SRC
+
+** Automatic Subcommands
+
+   Any =public methods= on an object will be exposed as subcommands (ignoring
+   any generic methods from ~Object~ itself).
+
+** Automatic Help
+
+   Disabled by default, can be enabled with ~include InstaCLI::Help~.
+
+   The parameters of a method are used to generate usage documentation,
+   following the common convention of =<required>= and =[optional]=.
+
+   If a method raises an ~ArugmentError~, a usage notice will be displayed,
+   outlining the correct usage.
+
+** Command Demultiplexing (aka "that thing =busybox= does")
+
+   Disabled by default, can be enabled with ~include InstaCLI::Demuxing~.
+
+   When enabled, the name the program was invoked with is read as the command to
+   execute.
+
+* License
+
+  ~instacli~ is available under the [[https://tldrlegal.com/license/mit-license][MIT License]]. See ~LICENSE.txt~ for the full text.
+
+* Contributors
+
+  - [[https://colstrom.github.io/][Chris Olstrom]] | [[mailto:chris@olstrom.com][e-mail]] | [[https://twitter.com/ChrisOlstrom][Twitter]]
