@@ -37,7 +37,9 @@ module InstaCLI
 
     Contract RespondTo[:to_sym] => ArrayOf[Symbol]
     def methods(o)
-      object(o).methods - Object.methods
+      (object(o).methods - Object.methods).reject do |m|
+        m.to_s.start_with? '__contracts_ruby_original_'
+      end
     end
 
     Contract RespondTo[:to_sym], RespondTo[:to_sym] => Bool
